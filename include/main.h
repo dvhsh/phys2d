@@ -3,6 +3,7 @@
 #define MAIN_H
 
 #include <simple2d.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -12,6 +13,10 @@
 
 // libEntropy
 #include "kinematic.h"
+
+#if PLATFORM == PLATFORM_MACOS_INTEL || PLATFORM == PLATFORM_MACOS_ARM
+    #include <mach-o/dyld.h>  // for _NSGetExecutablePath
+#endif
 
 #define RES_WIDTH 500
 #define RES_HEIGHT 500
@@ -35,10 +40,6 @@ typedef struct
 
 // Global ball state
 static BallActor *ball = NULL;
-
-void update();
-void render(S2D_Window *window);
-void spawnBall(S2D_Window *window);
 
 void ApplyGravityToActor(BallActor *actor);
 

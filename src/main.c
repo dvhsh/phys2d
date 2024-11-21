@@ -1,5 +1,8 @@
 #include "main.h"
 #include "scene.h"
+#include "component.h"
+
+static S2D_Window *window = NULL;
 
 void spawnBall(S2D_Window *window) 
 {
@@ -14,11 +17,6 @@ void spawnBall(S2D_Window *window)
         ball->time = 0;
         memcpy(ball->color, gi_ballColor, sizeof(GLint) * 4);
     }
-}
-
-void ApplyGravityToActor(BallActor *actor) 
-{
-   
 }
 
 void update() 
@@ -44,17 +42,9 @@ void render(S2D_Window *window)
 {
     Vector2 res = { RES_WIDTH, RES_HEIGHT };
     DrawGrid(res, PIXELS_PER_METER, COLOR_GREEN);
-    
-    // Draw ball
-    if (ball != NULL) {
-        S2D_DrawCircle(
-            ball->x,
-            ball->y,
-            ball->radius,
-            ball->sectors,
-            ball->color[0], ball->color[1], ball->color[2], ball->color[3]
-        );
-    }
+
+    Vector2 pos = {10, 10};
+    TextComponent(window, "phys2d", pos, COLOR_MAGENTA, 64);
 }
 
 int main() 
@@ -66,7 +56,19 @@ int main()
 
     printf("Running on: %s\n", GetPlatformName());
 
-    S2D_Window *window = S2D_CreateWindow(
+    if (!InitializeResources()) {
+        printf("Failed to initialize resources\n");
+        return -1;
+    }
+
+    if (TTF_Init() < 0) {
+        printf("SDL_TTF could not initialize! Error: %s\n", TTF_GetError());
+        return -1;
+    }
+
+    S2D_Diagnostics(true);
+
+    window = S2D_CreateWindow(
         "phys2d",
         RES_WIDTH,
         RES_HEIGHT,
@@ -76,7 +78,9 @@ int main()
     );
 
     if (!window) {
-        return 1;
+        printf("Failed to create window\n");
+        CleanupResources();
+        return -1;
     }
 
     window->fps_cap = iFPS;
@@ -85,16 +89,9 @@ int main()
     window->background.b = gi_backgroundColor[2];
     window->background.a = gi_backgroundColor[3];
 
-    // Create initial ball
-    spawnBall(window);
-
     S2D_Show(window);
     
-    // Cleanup
-    if (ball != NULL) {
-        free(ball);
-        ball = NULL;
-    }
+    CleanupResources();
     S2D_FreeWindow(window);
     return 0;
 }
